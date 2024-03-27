@@ -13,7 +13,9 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.example.beautifulprincess.R
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -44,9 +46,9 @@ fun BeautifulPrincessTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
@@ -57,7 +59,7 @@ fun BeautifulPrincessTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = ContextCompat.getColor(context, R.color.pink)
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }

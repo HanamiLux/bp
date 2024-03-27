@@ -18,13 +18,15 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.beautifulprincess.R
 import com.example.beautifulprincess.models.BPActivity
+import com.example.beautifulprincess.navigation.Screens
 import com.example.beautifulprincess.ui.theme.LightPink
 
-@Preview(showBackground = true)
 @Composable
-fun BottomNavBar(currentActivity: Int = BPActivity.Home.drawableId) {
+fun BottomNavBar(currentActivity: Int = BPActivity.Home.drawableId, navController: NavController) {
     val icons by remember{
         mutableStateOf(
             arrayOf(R.drawable.home,
@@ -39,32 +41,56 @@ fun BottomNavBar(currentActivity: Int = BPActivity.Home.drawableId) {
         BPActivity.Support.drawableId -> icons[2] = R.drawable.support_selected
         BPActivity.Profile.drawableId -> icons[3] = R.drawable.profile_selected
     }
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-           Box(
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+       Box(
+           Modifier
+               .fillMaxWidth()
+               .background(LightPink), contentAlignment = Alignment.Center
+        ) {
+           Row(
                Modifier
-                   .fillMaxWidth()
-                   .background(LightPink), contentAlignment = Alignment.Center
-            ) {
-               Row(Modifier.offset(y = (-20).dp).scale(2.1f)) {
-                   IconButton(onClick = { /*TODO*/ }) {
-                       Image(
-                           painter = painterResource(id = icons[0]),
-                           "Home",
-
-                       )
+                   .offset(y = (-20).dp)
+                   .scale(2.1f)) {
+               IconButton(onClick = {
+                   // Navigate to screen
+                   if (currentRoute != Screens.Home.route) {
+                       navController.navigate(Screens.Home.route)
                    }
-                   IconButton(onClick = { /*TODO*/ }) {
-                       Image(painter = painterResource(id = icons[1]), "Catalog")
-                   }
-                   IconButton(onClick = { /*TODO*/ }) {
-                       Image(painter = painterResource(id = icons[2]), "Support")
-                   }
-                   IconButton(onClick = { /*TODO*/ }) {
-                       Image(painter = painterResource(id = icons[3]), "Profile")
-                   }
+               }) {
+                   Image(
+                       painter = painterResource(id = icons[0]),
+                       "Home",
+                   )
                }
-
-            }
-
+               IconButton(onClick = {
+                   if (currentRoute != Screens.Catalog.route) {
+                       navController.navigate(Screens.Catalog.route)
+                   }
+               }) {
+                   Image(painter = painterResource(id = icons[1]),
+                       "Catalog")
+               }
+               IconButton(onClick = {
+                   if (currentRoute != Screens.Support.route) {
+                       navController.navigate(Screens.Support.route)
+                   }
+               }) {
+                   Image(painter = painterResource(id = icons[2]),
+                       "Support")
+               }
+               IconButton(onClick = {
+                   if (currentRoute != Screens.Profile.route) {
+                       navController.navigate(Screens.Profile.route)
+                   }
+               }) {
+                   Image(painter = painterResource(id = icons[3]),
+                       "Profile")
+               }
+           }
         }
+    }
 }
