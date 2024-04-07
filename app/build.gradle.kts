@@ -49,6 +49,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    packagingOptions{
+        excludes += "/META-INF/NOTICE.md"
+        excludes += "/META-INF/LICENSE.md"
+    }
 }
 
 dependencies {
@@ -65,6 +69,8 @@ dependencies {
     implementation(libs.androidx.material.icons)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.sun.mail)
+    implementation(libs.sun.activation)
 
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")

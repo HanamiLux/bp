@@ -223,11 +223,6 @@ fun SignInScreen(navController: NavController) {
 
 fun signIn(context: Context, navController: NavController, emailText: String, passwordText: String){
     val db = AppDatabase.getDbInstance(context).usersDao()
-    if(db.getAllUsers().isEmpty())
-        Log.d("mylog", "no users")
-    for(user in AppDatabase.getDbInstance(context).usersDao().getAllUsers()){
-        Log.d("mylog", "${user.id}, ${user.login}, ${user.password}")
-    }
     if (emailText.isEmpty() || passwordText.isEmpty()) {
         Toast.makeText(
             context,

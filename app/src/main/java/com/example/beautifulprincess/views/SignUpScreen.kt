@@ -235,8 +235,7 @@ fun registration(context: Context, login: String, password: String) {
                 context,
                 "User with email ${fireBaseUser?.email} is registered!",
                 Toast.LENGTH_SHORT
-            )
-                .show()
+            ).show()
 
             if(db.usersDao().getUser(login) == null){
                 db.usersDao().insertUser(User(null, login, password))
