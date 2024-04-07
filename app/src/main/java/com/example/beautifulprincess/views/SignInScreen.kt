@@ -1,5 +1,7 @@
 package com.example.beautifulprincess.views
 
+import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -58,7 +60,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 
 @Composable
-fun SignInScreen(navController:NavController){
+fun SignInScreen(navController: NavController) {
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
 
@@ -123,12 +125,12 @@ fun SignInScreen(navController:NavController){
                         color = Color.Black
                     ),
                     leadingIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Image(
-                                painter = painterResource(id = R.drawable.email_icon),
-                                contentDescription = "email_input"
-                            )
-                        }
+
+                        Image(
+                            painter = painterResource(id = R.drawable.email_icon),
+                            contentDescription = "email_input"
+                        )
+
                     }
                 )
             }
@@ -169,17 +171,16 @@ fun SignInScreen(navController:NavController){
                         else Icons.Filled.VisibilityOff
 
                         val description = if (passwordVisible) "Hide password" else "Show password"
-                        IconButton(onClick = {passwordVisible = !passwordVisible}){
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(imageVector = image, description)
                         }
                     },
                     leadingIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Image(
-                                painter = painterResource(id = R.drawable.password_icon),
-                                contentDescription = "password_input"
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.password_icon),
+                            contentDescription = "password_input"
+                        )
+
                     }
                 )
             }
@@ -195,34 +196,60 @@ fun SignInScreen(navController:NavController){
             }
 
             val context = LocalContext.current
-            Column {
-                Box {
+            Column(
+                Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(Modifier.fillMaxSize()) {
                     IconButton(
                         onClick = {
-                            if (emailText.isEmpty() || passwordText.isEmpty()){
-                                Toast.makeText(context, "Enter all empty fields!", Toast.LENGTH_SHORT).show()
-                                return@IconButton
-                            }
-                            val auth:FirebaseAuth = Firebase.auth
-
-                            auth.signInWithEmailAndPassword(emailText, passwordText)
-                                .addOnCompleteListener{task ->
-                                    if(task.isSuccessful){
-                                        navController.navigate(Screens.Home.route)
-                                    }
-                                }
-                                .addOnFailureListener{
-                                    Toast.makeText(context, "Wrong data!", Toast.LENGTH_SHORT).show()
-                                }
+                            signIn(context, navController, emailText, passwordText)
                         },
                         modifier = Modifier
-                            .fillMaxSize(.8f)
+                            .fillMaxWidth(0.5f)
                             .align(Alignment.Center)
+
                     ) {
-                        Image(painter = painterResource(id = R.drawable.sign_in_button), "Sign in")
+                        Image(
+                            painter = painterResource(id = R.drawable.sign_in_button),
+                            "Sign in"
+                        )
                     }
                 }
             }
         }
     }
+}
+
+fun signIn(context: Context, navController: NavController, emailText: String, passwordText: String){
+    val db = AppDatabase.getDbInstance(context).usersDao()
+    if(db.getAllUsers().isEmpty())
+        Log.d("mylog", "no users")
+    for(user in AppDatabase.getDbInstance(context).usersDao().getAllUsers()){
+        Log.d("mylog", "${user.id}, ${user.login}, ${user.password}")
+    }
+    if (emailText.isEmpty() || passwordText.isEmpty()) {
+        Toast.makeText(
+            context,
+            "Fill empty fields!",
+            Toast.LENGTH_SHORT
+        ).show()
+        return
+    }
+    val auth: FirebaseAuth = Firebase.auth
+
+    auth.signInWithEmailAndPassword(emailText, passwordText)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                if(db.getUser(emailText) == null){
+                    db.insertUser(User(null, emailText, passwordText))
+                }
+
+                navController.navigate(Screens.Home.route)
+            }
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, "Incorrect data!", Toast.LENGTH_SHORT).show()
+        }
+
 }
