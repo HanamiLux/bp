@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "906989351740",
+    "project_id": "beautifulprincess-81138",
+    "storage_bucket": "beautifulprincess-81138.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:906989351740:android:50a08421d0b85c2921e439",
+        "android_client_info": {
+          "package_name": "com.example.beautifulprincess"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3xG2y5JLEoor9ENSkT-5skiYeTRezuhk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
