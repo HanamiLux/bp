@@ -1,5 +1,7 @@
 package com.example.beautifulprincess.views
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,11 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -29,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -38,15 +38,32 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.beautifulprincess.R
 import com.example.beautifulprincess.models.BPActivity
+import com.example.beautifulprincess.navigation.Screens
 import com.example.beautifulprincess.ui.theme.Gold
 import com.example.beautifulprincess.ui.theme.Typography
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.util.Properties
+import javax.mail.Authenticator
+import javax.mail.Message
+import javax.mail.MessagingException
+import javax.mail.PasswordAuthentication
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 @Composable
-fun SupportScreen(navController:NavController) {
+fun SupportScreen(navController: NavController) {
+    val context = LocalContext.current
     // Screen background
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.White)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
         Column {
             Image(
                 painter = painterResource(id = R.drawable.header_report),
@@ -62,7 +79,9 @@ fun SupportScreen(navController:NavController) {
                 Image(
                     painter = painterResource(id = R.drawable.report_header_text),
                     contentDescription = "suggest or report",
-                    modifier = Modifier.offset(y=(-15).dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .offset(y = (-15).dp)
+                        .fillMaxWidth(),
                     alignment = Alignment.Center
                 )
             }
@@ -96,6 +115,7 @@ fun SupportScreen(navController:NavController) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                var text by remember { mutableStateOf("") }
                 Box {
                     Image(
                         painter = painterResource(id = R.drawable.scroll_report),
@@ -111,8 +131,9 @@ fun SupportScreen(navController:NavController) {
                     ) {
                         Text(
                             text = "Your Majesty developers,",
-                            modifier = Modifier.fillMaxWidth(0.5f)
-                                .offset(y=70.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(0.5f)
+                                .offset(y = 70.dp),
                             style = TextStyle(
                                 fontSize = 20.sp,
                                 color = Gold
@@ -121,8 +142,9 @@ fun SupportScreen(navController:NavController) {
                         )
                         Text(
                             text = "Your Majesty developers,",
-                            modifier = Modifier.fillMaxWidth(0.5f)
-                                .offset(y=70.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(0.5f)
+                                .offset(y = 70.dp),
                             fontFamily = Typography.bodyLarge.fontFamily,
                             fontSize = 20.sp,
                             style = TextStyle(
@@ -140,7 +162,6 @@ fun SupportScreen(navController:NavController) {
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        var text by remember { mutableStateOf("") }
                         TextField(
                             value = text,
                             onValueChange = { text = it },
@@ -171,10 +192,13 @@ fun SupportScreen(navController:NavController) {
                 // Send button
                 Box {
                     IconButton(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            sendReport(context, navController, text)
+                            text = ""
+                        },
                         Modifier
                             .fillMaxSize(.5f)
-                            .offset(y=(-15).dp)
+                            .offset(y = (-15).dp)
                             .align(Alignment.Center)
                     ) {
                         Image(painter = painterResource(id = R.drawable.send_button_icon), "Send")
@@ -184,4 +208,53 @@ fun SupportScreen(navController:NavController) {
             BottomNavBar(BPActivity.Support.drawableId, navController = navController)
         }
     }
+}
+
+//Send email function
+fun sendReport(context: Context, navController: NavController, text: String) {
+
+    val firebaseAuth = FirebaseAuth.getInstance()
+    if (firebaseAuth.currentUser?.email == null || text.isEmpty()) {
+        navController.navigate(Screens.Profile.route)
+        return
+    }
+    GlobalScope.launch(Dispatchers.IO) {
+        val properties = Properties()
+        properties.put("mail.smtp.auth", "true")
+        properties.put("mail.smtp.starttls.enable", "true")
+        properties.put("mail.smtp.host", "smtp.gmail.com")
+        properties.put("mail.smtp.port", "587")
+
+        val username = "beautifullprincessmobile@gmail.com"
+        val password = "gqsh xswu mery redc"
+
+        // Create a session with authentication
+        val session = Session.getInstance(properties, object : Authenticator() {
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+                return PasswordAuthentication(username, password)
+            }
+        })
+
+        try {
+            val message = MimeMessage(session) // Create a MimeMessage object
+            message.setFrom(InternetAddress(username)) // Set the sender email address
+            message.addRecipient(
+                Message.RecipientType.TO,
+                InternetAddress(username)
+            ) // Set the recipient email address
+            message.subject = "User report"
+            message.setText("$text\n\n\nsender: ${firebaseAuth.currentUser?.email} ")
+            Transport.send(message) // Send the message
+            launch(Dispatchers.Main) {
+                Toast.makeText(context, "Email sent successfully!", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: MessagingException) {
+            launch(Dispatchers.Main) {
+                Toast.makeText(context, "Error sending email: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
+
+
 }

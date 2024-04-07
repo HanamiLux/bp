@@ -62,7 +62,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
 @Composable
-fun SignUpScreen(navController:NavController){
+fun SignUpScreen(navController: NavController) {
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
     Box(modifier = Modifier.fillMaxWidth()) {
@@ -125,12 +125,12 @@ fun SignUpScreen(navController:NavController){
                         color = Color.Black
                     ),
                     leadingIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Image(
-                                painter = painterResource(id = R.drawable.email_icon),
-                                contentDescription = "email_input"
-                            )
-                        }
+
+                        Image(
+                            painter = painterResource(id = R.drawable.email_icon),
+                            contentDescription = "email_input"
+                        )
+
                     }
                 )
             }
@@ -172,17 +172,15 @@ fun SignUpScreen(navController:NavController){
                         else Icons.Filled.VisibilityOff
 
                         val description = if (passwordVisible) "Hide password" else "Show password"
-                        IconButton(onClick = {passwordVisible = !passwordVisible}){
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(imageVector = image, description)
                         }
                     },
                     leadingIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Image(
-                                painter = painterResource(id = R.drawable.password_icon),
-                                contentDescription = "password_input"
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.password_icon),
+                            contentDescription = "password_input"
+                        )
                     }
                 )
             }
@@ -199,13 +197,13 @@ fun SignUpScreen(navController:NavController){
 
             val context = LocalContext.current
             Column {
-                Box {
+                Box (Modifier.fillMaxSize()){
                     IconButton(
                         onClick = {
                             validData(context, emailText, passwordText)
                         },
                         modifier = Modifier
-                            .fillMaxSize(.8f)
+                            .fillMaxWidth(.5f)
                             .align(Alignment.Center)
                     ) {
                         Image(painter = painterResource(id = R.drawable.sign_up_button), "Sign up")
@@ -216,31 +214,34 @@ fun SignUpScreen(navController:NavController){
     }
 }
 
-fun validData(context:Context, login: String, password: String){
-    if (!Patterns.EMAIL_ADDRESS.matcher(login).matches()){
+fun validData(context: Context, login: String, password: String) {
+    if (!Patterns.EMAIL_ADDRESS.matcher(login).matches()) {
         Toast.makeText(context, "Invalid email address", Toast.LENGTH_SHORT).show()
-    } else if (TextUtils.isEmpty(password)){
+    } else if (TextUtils.isEmpty(password)) {
         Toast.makeText(context, "Password must not be empty", Toast.LENGTH_SHORT).show()
-    } else{
+    } else {
         registration(context, login, password)
     }
 }
 
-fun registration(context:Context, login: String, password: String) {
+fun registration(context: Context, login: String, password: String) {
     val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    val db:AppDatabase = AppDatabase.getDbInstance(context.applicationContext)
+    val db: AppDatabase = AppDatabase.getDbInstance(context.applicationContext)
 
     firebaseAuth.createUserWithEmailAndPassword(login, password)
         .addOnSuccessListener {
-            val fireBaseUser:FirebaseUser? = firebaseAuth.currentUser
-            Toast.makeText(context, "User with email ${fireBaseUser?.email} is registered!", Toast.LENGTH_SHORT)
-                .show()
+            val fireBaseUser: FirebaseUser? = firebaseAuth.currentUser
+            Toast.makeText(
+                context,
+                "User with email ${fireBaseUser?.email} is registered!",
+                Toast.LENGTH_SHORT
+            ).show()
 
-            db.usersDao().insertUser(
-                User(null, login, password)
-            )
+            if(db.usersDao().getUser(login) == null){
+                db.usersDao().insertUser(User(null, login, password))
+            }
         }
-        .addOnFailureListener{
+        .addOnFailureListener {
             Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
         }
 }

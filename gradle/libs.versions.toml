@@ -13,6 +13,8 @@ googleServices = "4.4.1"
 firebaseAuth = "22.3.1"
 roomRuntime = "2.6.1"
 bomVersion = "32.8.0"
+sunMail = "1.6.6"
+sunActivation = "1.6.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,6 +38,8 @@ androidx-material-icons = {group = "androidx.compose.material", name = "material
 firebase-bom = {group = "com.google.firebase", name = "firebase-bom", version.ref="bomVersion"}
 google-services = { group = "com.google.gms", name = "google-services", version.ref = "googleServices" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+sun-mail = {group = "com.sun.mail", name = "android-mail", version.ref = "sunMail"}
+sun-activation = {group = "com.sun.mail", name = "android-activation", version.ref = "sunActivation"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
