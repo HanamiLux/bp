@@ -35,14 +35,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.beautifulprincess.AppDatabase
 import com.example.beautifulprincess.R
 import com.example.beautifulprincess.models.BPActivity
 import com.example.beautifulprincess.models.ProductRowModel
@@ -52,7 +55,10 @@ import com.example.beautifulprincess.ui.theme.Typography
 
 @Composable
 fun MainScreen(navController: NavController) {
-    Box(Modifier.fillMaxSize().background(Color.White)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color.White)) {
         //Header
         Image(
             painter = painterResource(id = R.drawable.header_main),
@@ -98,7 +104,7 @@ fun MainScreen(navController: NavController) {
                     ),
 
                     trailingIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(onClick = { navController.navigate(Screens.Catalog.route) }) {
                             Image(
                                 painter = painterResource(id = R.drawable.search_icon),
                                 contentDescription = "search"
@@ -133,25 +139,30 @@ fun MainScreen(navController: NavController) {
                 alignment = Alignment.Center
             )
             //Products horizontal list
-            LazyRow(
-                Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.32f)
-            ) {
-                itemsIndexed(
-                    listOf(
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product)
-                    )
-                ) { _, product ->
-                    ProductCard(product,
-                        onClick = {
-                        navController.navigate(Screens.CurrentCard.route)
-                    })
+            val context = LocalContext.current
+            val db:AppDatabase = AppDatabase.getDbInstance(context.applicationContext)
+            val product = db.productsDao().getAllProducts()
+
+            if (product.isEmpty()){
+                Text(text = "Список продуктов пустой")
+            }
+            else {
+                LazyRow(
+                    Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.32f)
+                ) {
+                    itemsIndexed(
+                        product
+                    ) { _, product ->
+                        ProductCard(ProductRowModel(product.name, product.price, imageId = product.image),
+                            onClick = {
+                                navController.navigate(
+                                    "current_card_screen/${product.name}/${product.price}/${product.description}/" +
+                                            "${product.image}"
+                                )
+                            })
+                    }
                 }
             }
 
@@ -170,19 +181,15 @@ fun MainScreen(navController: NavController) {
                     .fillMaxHeight(0.581f)
             ) {
                 itemsIndexed(
-                    listOf(
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                        ProductRowModel("Pomade", 20.50, R.drawable.image_product)
-                    )
+                    product
                 ) { _, product ->
-                    ProductCard(product,
+                    ProductCard(ProductRowModel(product.name, product.price, imageId = product.image),
                         onClick = {
-                            navController.navigate(Screens.CurrentCard.route)
-                        },)
+                            navController.navigate(
+                                "current_card_screen/${product.name}/${product.price}/${product.description}/" +
+                                        "${product.image}"
+                            )
+                        })
                 }
             }
             //NAVBAR
@@ -197,13 +204,14 @@ fun MainScreen(navController: NavController) {
 fun ProductCard(
     product: ProductRowModel = ProductRowModel(
         "Pomade",
-        20.50,
+        20.50f,
         R.drawable.image_product,
-    ), titleSp: TextUnit = 12.sp, priceSp: TextUnit = 10.sp,
+    ), titleSp: TextUnit = 11.sp, priceSp: TextUnit = 10.sp,
     onClick: () -> Unit = {}
 ) {
     Box(
-        modifier = Modifier.clickable { onClick() }
+        modifier = Modifier
+            .clickable { onClick() }
             .aspectRatio(1f),
         contentAlignment = Alignment.Center,
     ) {
@@ -218,18 +226,18 @@ fun ProductCard(
         Column(
             Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.7f),
+                .fillMaxHeight(0.8f),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.6f)
+                    .fillMaxHeight(0.53f)
                     .clip(RoundedCornerShape(10.dp))
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.image_product),
+                    painter = painterResource(id = product.imageId),
                     contentDescription = product.title,
                     Modifier
                         .fillMaxSize(),
@@ -241,6 +249,7 @@ fun ProductCard(
             Box{
                 Text(
                     text = product.title,
+                    Modifier.fillMaxWidth(.5f),
                     style = TextStyle(
                         color = Color.Black,
                         fontSize = 12.sp,
@@ -252,17 +261,20 @@ fun ProductCard(
                     fontFamily = Typography.bodyLarge.fontFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = titleSp,
-                    maxLines = 1
-
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
                 )
 
                 Text(
                     text = product.title,
+                    Modifier.fillMaxWidth(.5f),
                     style = TextStyle(
                         color = Color.White,
                         fontSize = titleSp,
                     ),
-                    fontFamily = Typography.bodyLarge.fontFamily
+                    fontFamily = Typography.bodyLarge.fontFamily,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2
                 )
             }
 

@@ -43,12 +43,13 @@ import androidx.navigation.NavController
 import com.example.beautifulprincess.R
 import com.example.beautifulprincess.models.BPActivity
 import com.example.beautifulprincess.ui.theme.Pink
+import com.example.beautifulprincess.ui.theme.PurpleTEXT
 import com.example.beautifulprincess.ui.theme.Typography
 import org.w3c.dom.Text
 
 // Current card from catalog screen
 @Composable
-fun CurrentCardScreen(navController:NavController) {
+fun CurrentCardScreen(navController:NavController, name: String, price: Float, description: String, image: Int) {
     Box(
         modifier = Modifier
             .background(Color.White)
@@ -60,14 +61,15 @@ fun CurrentCardScreen(navController:NavController) {
                 .fillMaxHeight(),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            Box {
-                Image(
-                    painter = painterResource(id = R.drawable.pomade_text),
-                    contentDescription = "pomade text",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxSize(0.05f),
-                    alignment = Alignment.Center
+            Box(Modifier.fillMaxWidth().fillMaxSize(0.1f),
+                contentAlignment = Alignment.Center) {
+                Text(
+                    text = name,
+                    style = TextStyle(
+                        fontSize = 35.sp,
+                        color = PurpleTEXT
+                    ),
+                    fontFamily = Typography.bodyLarge.fontFamily,
                 )
             }
         // Product description with image, price and description as scroll letter
@@ -76,7 +78,7 @@ fun CurrentCardScreen(navController:NavController) {
             ) {
                 Box {
                     Image(
-                        painter = painterResource(id = R.drawable.image_product),
+                        painter = painterResource(id = image),
                         contentDescription = "product",
                         modifier = Modifier
                             .fillMaxWidth()
@@ -85,7 +87,7 @@ fun CurrentCardScreen(navController:NavController) {
                 }
                 Box {
                     Text(
-                        text = "5.99€",
+                        text = "${price}€",
                         fontFamily = Typography.bodyLarge.fontFamily,
                         fontSize = 40.sp,
                         maxLines = 1,
@@ -99,7 +101,7 @@ fun CurrentCardScreen(navController:NavController) {
                         )
                     )
                     Text(
-                        text = "5.99€",
+                        text = "${price}€",
                         style = TextStyle(
                             color = Pink,
                             fontSize = 40.sp,
@@ -127,7 +129,7 @@ fun CurrentCardScreen(navController:NavController) {
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
-                                text = "DES\nCRIPTION DESC DKFLJLKD\nGFLKDGKLSD\nFLFDKGLF\nSLKGFLKDGJLDF\nАЛДВАЫЛДВА\nЛЫДВАЛДЫ\nВАЛВЫА\nвлады\nвдавыдаьбсчм",
+                                text = description,
                                 fontSize = 20.sp,
                             )
                         }

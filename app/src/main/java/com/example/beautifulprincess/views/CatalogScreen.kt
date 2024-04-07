@@ -2,6 +2,7 @@ package com.example.beautifulprincess.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,10 +22,18 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,23 +44,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.beautifulprincess.AppDatabase
 import com.example.beautifulprincess.R
 import com.example.beautifulprincess.models.BPActivity
+import com.example.beautifulprincess.models.Product
 import com.example.beautifulprincess.models.ProductRowModel
 import com.example.beautifulprincess.navigation.Screens
 
 // Catalog of products screen
 @Composable
 fun CatalogScreen(navController:NavController){
+    var text by remember { mutableStateOf("") }
+
     Box(modifier = Modifier.background(Color.White)) {
         Image(
             painter = painterResource(id = R.drawable.header_main),
@@ -71,9 +89,6 @@ fun CatalogScreen(navController:NavController){
                     .fillMaxHeight(0.15f),
                 contentAlignment = Alignment.Center
             ) {
-
-                var text by remember { mutableStateOf("") }
-
                 TextField(
                     value = text,
                     onValueChange = { text = it },
@@ -104,19 +119,70 @@ fun CatalogScreen(navController:NavController){
                     }
                 )
             }
+
+            var expanded by remember { mutableStateOf(false) }
+            val list = listOf("All", "Pomades", "Brushes", "Decorate")
+            var selectedItem by remember { mutableStateOf("") }
+            var textFiledSize by remember { mutableStateOf(Size.Zero) }
+            val icon = if(expanded){
+                Icons.Filled.KeyboardArrowUp
+            }else{
+                Icons.Filled.KeyboardArrowDown
+            }
+
+            Column(modifier = Modifier.padding(horizontal = 30.dp, vertical = 30.dp)){
+                OutlinedTextField(
+                    value = selectedItem,
+                    onValueChange = { selectedItem = it },
+                    modifier = Modifier
+                        .fillMaxWidth(.55f)
+                        .onGloballyPositioned { coordinates ->
+                            textFiledSize = coordinates.size.toSize()
+                        },
+                    label = {Text(text = "Category")},
+                    trailingIcon = {
+                        Icon(icon, "", Modifier.clickable{ expanded = !expanded })
+                    },
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.White,
+                        focusedContainerColor = Color.White,
+                        unfocusedTextColor = Color.Black,
+                        focusedTextColor = Color.Black
+                    )
+                )
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .width(with(LocalDensity.current){textFiledSize.width.toDp()})
+                ) {
+                    list.forEach { label ->
+                        DropdownMenuItem(text = {Text(text = label)},onClick = {
+                            selectedItem = label
+                            expanded = false
+                        })
+                    }
+                }
+            }
+
             Box {
                 Image(
                     painter = painterResource(id = R.drawable.catalog_text),
                     contentDescription = "catalog",
-                    modifier = Modifier.fillMaxWidth()
-                        .height(90.dp)
-                        .width(280.dp)
-                        .padding(0.dp, 50.dp, 0.dp, 0.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     alignment = Alignment.Center
                 )
             }
 
             Spacer(Modifier.height(5.dp))
+
+            val context = LocalContext.current
+            val db:AppDatabase = AppDatabase.getDbInstance(context.applicationContext)
+
+            val product = if(selectedItem != "" && selectedItem != "All") db.productsDao().getProductsByCategory(selectedItem)
+                else db.productsDao().getAllProducts()
             // Product list
             Box {
                 LazyVerticalGrid(
@@ -125,34 +191,17 @@ fun CatalogScreen(navController:NavController){
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     itemsIndexed(
-                        listOf(
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product),
-                            ProductRowModel("Pomade", 20.50, R.drawable.image_product)
-                        )
+                        product
                     ) { _, product ->
-                        ProductCard(
-                            product,
-                            titleSp = 13.sp,
-                            priceSp = 11.sp,
+                        ProductCard(ProductRowModel(product.name, product.price, imageId = product.image),
                             onClick = {
-                                navController.navigate(Screens.CurrentCard.route)
-                            },
-                        )
+                                navController.navigate(
+                                    Screens.CurrentCard.route+"/${product.name}/${product.price}/${product.description}/" +
+                                            "${product.image}"
+                                )
+                            })
                     }
                 }
-
             }
         }
     }
