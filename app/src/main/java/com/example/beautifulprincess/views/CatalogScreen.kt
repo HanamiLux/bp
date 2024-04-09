@@ -148,7 +148,8 @@ fun CatalogScreen(navController:NavController){
                         focusedContainerColor = Color.White,
                         unfocusedTextColor = Color.Black,
                         focusedTextColor = Color.Black
-                    )
+                    ),
+                    maxLines = 1
                 )
 
                 DropdownMenu(

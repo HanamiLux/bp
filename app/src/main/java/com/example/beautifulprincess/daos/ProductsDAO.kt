@@ -2,6 +2,7 @@ package com.example.beautifulprincess.daos
 
 import androidx.room.*
 import com.example.beautifulprincess.models.Product
+import com.example.beautifulprincess.models.ProductRowModel
 import com.example.beautifulprincess.models.User
 
 @Dao
@@ -26,4 +27,7 @@ interface ProductsDAO {
 
     @Query("SELECT * FROM Product WHERE name = :name AND category = :category")
     fun getProductsByCategoryAndName(name: String, category: String):List<Product>
+
+    @Query("SELECT * FROM Product WHERE id_product = :productId")
+    fun getProductById(productId: Int?): Product
 }

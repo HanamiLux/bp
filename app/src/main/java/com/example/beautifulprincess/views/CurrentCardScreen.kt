@@ -1,5 +1,6 @@
 package com.example.beautifulprincess.views
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableState
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -40,11 +42,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.beautifulprincess.AppDatabase
 import com.example.beautifulprincess.R
 import com.example.beautifulprincess.models.BPActivity
+import com.example.beautifulprincess.models.Order
+import com.example.beautifulprincess.navigation.Screens
 import com.example.beautifulprincess.ui.theme.Pink
 import com.example.beautifulprincess.ui.theme.PurpleTEXT
 import com.example.beautifulprincess.ui.theme.Typography
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import org.w3c.dom.Text
 
 // Current card from catalog screen
@@ -135,16 +142,34 @@ fun CurrentCardScreen(navController:NavController, name: String, price: Float, d
                         }
                     }
                 }
+                val db = AppDatabase.getDbInstance(LocalContext.current)
+                val currentUser = FirebaseAuth.getInstance().currentUser?.email
+                val context = LocalContext.current
+                if(currentUser == null){
+                    navController.navigate(Screens.Profile.route)
+                    return
+                }
+                val userId = db.usersDao().getUser(currentUser).id!!.toInt()
                 Box(
                     modifier = Modifier
-                        .align(Alignment.End)
-                        .offset(y = (-15).dp)
-                        .padding(end = 15.dp)
+                        .offset(y = (-50).dp)
                 ) {
                     IconButton(
-                        onClick = { /*TODO*/ },
+                        onClick = { // Quantity check
+                            for (order in db.ordersDao().getUserOrderedProducts(userId)){
+                                val productId = db.productsDao().getProductsByName(name)[0].id
+                                if(order.productId == productId)
+                                    ++order.quantity
+                                else{
+                                    db.ordersDao().insertOrder(Order(null,
+                                        productId,
+                                        userId,1))
+                                }
+                            }
+                            Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                        },
                         modifier = Modifier
-                            .fillMaxSize(.5f)
+                            .fillMaxSize()
                     ) {
                         Image(painter = painterResource(id = R.drawable.buy_button), "Buy")
                     }

@@ -5,16 +5,19 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.beautifulprincess.daos.OrdersDAO
 import com.example.beautifulprincess.daos.ProductsDAO
 import com.example.beautifulprincess.daos.UsersDAO
+import com.example.beautifulprincess.models.Order
 import com.example.beautifulprincess.models.Product
 import com.example.beautifulprincess.models.User
 import java.util.concurrent.Executors
 
-@Database(entities = [User::class, Product::class], version = 1, exportSchema = false )
+@Database(entities = [User::class, Product::class, Order::class], version = 1, exportSchema = false )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun usersDao():UsersDAO
     abstract fun productsDao():ProductsDAO
+    abstract fun ordersDao():OrdersDAO
 
 
 
