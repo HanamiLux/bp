@@ -182,8 +182,19 @@ fun CatalogScreen(navController:NavController){
             val context = LocalContext.current
             val db:AppDatabase = AppDatabase.getDbInstance(context.applicationContext)
 
-            val product = if(selectedItem != "" && selectedItem != "All") db.productsDao().getProductsByCategory(selectedItem)
-                else db.productsDao().getAllProducts()
+            val product = if(selectedItem != "" && selectedItem != "All") {
+                if (text == null || text == ""){
+                    db.productsDao().getProductsByCategory(selectedItem)
+                } else{
+                    db.productsDao().getProductsByCategoryAndName(text, selectedItem)
+                }
+            } else {
+                if (text == null || text == ""){
+                    db.productsDao().getAllProducts()
+                } else{
+                    db.productsDao().getProductsByName(text)
+                }
+            }
             // Product list
             Box {
                 LazyVerticalGrid(
