@@ -21,6 +21,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -162,7 +165,7 @@ fun ProfileScreen(navController:NavController) {
                 }
 
                 val db = AppDatabase.getDbInstance(LocalContext.current)
-                val orderInCart = db.ordersDao().getUserOrderedProducts(db.usersDao().getUser(currentUser).id!!.toInt())
+                val orderInCart = remember{ mutableStateOf(db.ordersDao().getUserOrderedProducts(db.usersDao().getUser(currentUser).id!!.toInt())) }
                 val context = LocalContext.current
                 LazyColumn(
                     Modifier
@@ -170,30 +173,34 @@ fun ProfileScreen(navController:NavController) {
                         .fillMaxHeight(0.8f),
                     verticalArrangement = Arrangement.spacedBy(10.dp))
                 {
-                    itemsIndexed(orderInCart){
-                        _, order ->
-                        val product: Product = db.productsDao().getProductById(order.productId)
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                Modifier
-                                    .fillMaxHeight(0.4f)
-                                    .fillMaxWidth(0.7f),
-                                contentAlignment = Alignment.CenterStart
+
+                        itemsIndexed(orderInCart.value) { _, order ->
+                            val product: Product = db.productsDao().getProductById(order.productId)
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                ProductCard(
-                                    ProductRowModel(
-                                        product.name,
-                                        product.price,
-                                        imageId = product.image
-                                    ),
-                                    onClick = {
-                                        navController.navigate(
-                                            Screens.CurrentCard.route + "/${product.name}/${product.price}/${product.description}/" +
-                                                    "${product.image}"
-                                        )
-                                    }, titleSp = 24.sp, priceSp = 22.sp)
-                            }
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Box(
+                                    Modifier
+                                        .fillMaxHeight(0.4f)
+                                        .fillMaxWidth(0.7f),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    ProductCard(
+                                        ProductRowModel(
+                                            product.name,
+                                            product.price,
+                                            imageId = product.image
+                                        ),
+                                        onClick = {
+                                            navController.navigate(
+                                                Screens.CurrentCard.route + "/${product.name}/${product.price}/${product.description}/" +
+                                                        "${product.image}"
+                                            )
+                                        }, titleSp = 24.sp, priceSp = 22.sp
+                                    )
+                                }
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     Text(
                                         text = "${order.quantity}",
                                         Modifier.fillMaxWidth(.5f),
@@ -224,9 +231,11 @@ fun ProfileScreen(navController:NavController) {
                                         maxLines = 2
                                     )
                                 }
+                            }
+
+
                         }
 
-                    }
                 }
                 Row(
                     Modifier
@@ -235,6 +244,7 @@ fun ProfileScreen(navController:NavController) {
                     verticalAlignment = Alignment.Top){
                     IconButton(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.5f).offset(y = ((-30).dp)), onClick = {
                         db.ordersDao().closeOrder(db.usersDao().getUser(currentUser).id!!.toInt())
+                        orderInCart.value = listOf()
                         Toast.makeText(context, "Cart has cleared", Toast.LENGTH_SHORT).show()
                     }) {
                         Image(painter = painterResource(id = R.drawable.clear_button), "Clear",

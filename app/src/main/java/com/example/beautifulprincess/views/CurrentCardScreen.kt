@@ -158,26 +158,13 @@ fun CurrentCardScreen(navController:NavController, name: String, price: Float, d
                             }
                             val userId = db.usersDao().getUser(currentUser).id!!.toInt()
                             val ordersDao = db.ordersDao().getUserOrderedProducts(userId)
-                            val product = db.productsDao().getProductsByName(name)[0].id
+                            val productId = db.productsDao().getProductsByName(name)[0].id
                             if (ordersDao.isEmpty()){
                                 db.ordersDao().insertOrder(Order(null,
-                                    product,
+                                    productId,
                                     userId,1))
                             }else {
-                                for (order in ordersDao) {
-                                    val productId = db.productsDao().getProductsByName(name)[0].id
-                                    if (order.productId == productId)
-                                        ++order.quantity
-                                    else {
-                                        db.ordersDao().insertOrder(
-                                            Order(
-                                                null,
-                                                productId,
-                                                userId, 1
-                                            )
-                                        )
-                                    }
-                                }
+                                db.ordersDao().insertOrder(Order(null, productId, userId, 1))
                             }
                             Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
                         },
