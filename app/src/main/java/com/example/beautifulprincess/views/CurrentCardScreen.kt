@@ -142,21 +142,22 @@ fun CurrentCardScreen(navController:NavController, name: String, price: Float, d
                         }
                     }
                 }
-                val db = AppDatabase.getDbInstance(LocalContext.current)
-                val currentUser = FirebaseAuth.getInstance().currentUser?.email
                 val context = LocalContext.current
-                if(currentUser == null){
-                    navController.navigate(Screens.Profile.route)
-                    return
-                }
-                val userId = db.usersDao().getUser(currentUser).id!!.toInt()
-                val ordersDao = db.ordersDao().getUserOrderedProducts(userId)
                 Box(
                     modifier = Modifier
                         .offset(y = (-50).dp)
                 ) {
                     IconButton(
                         onClick = { // Quantity check
+                            val db = AppDatabase.getDbInstance(context)
+                            val currentUser = FirebaseAuth.getInstance().currentUser?.email
+
+                            if(currentUser == null){
+                                navController.navigate(Screens.Profile.route)
+                                return@IconButton
+                            }
+                            val userId = db.usersDao().getUser(currentUser).id!!.toInt()
+                            val ordersDao = db.ordersDao().getUserOrderedProducts(userId)
                             val product = db.productsDao().getProductsByName(name)[0].id
                             if (ordersDao.isEmpty()){
                                 db.ordersDao().insertOrder(Order(null,
