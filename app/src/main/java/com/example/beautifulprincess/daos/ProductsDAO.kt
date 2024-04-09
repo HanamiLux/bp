@@ -16,7 +16,7 @@ interface ProductsDAO {
     @Delete
     fun deleteProduct(product:Product)
 
-    @Query("SELECT * FROM Product WHERE name = :name")
+    @Query("SELECT * FROM Product WHERE name LIKE :name || '%'")
     fun getProductsByName(name: String): List<Product>
 
     @Query("SELECT * FROM Product")
@@ -25,7 +25,7 @@ interface ProductsDAO {
     @Query("SELECT * FROM Product WHERE category = :category")
     fun getProductsByCategory(category: String):List<Product>
 
-    @Query("SELECT * FROM Product WHERE name = :name AND category = :category")
+    @Query("SELECT * FROM Product WHERE name LIKE :name || '%' AND category = :category")
     fun getProductsByCategoryAndName(name: String, category: String):List<Product>
 
     @Query("SELECT * FROM Product WHERE id_product = :productId")
