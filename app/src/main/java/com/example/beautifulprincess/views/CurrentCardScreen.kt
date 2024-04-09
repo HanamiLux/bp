@@ -150,20 +150,32 @@ fun CurrentCardScreen(navController:NavController, name: String, price: Float, d
                     return
                 }
                 val userId = db.usersDao().getUser(currentUser).id!!.toInt()
+                val ordersDao = db.ordersDao().getUserOrderedProducts(userId)
                 Box(
                     modifier = Modifier
                         .offset(y = (-50).dp)
                 ) {
                     IconButton(
                         onClick = { // Quantity check
-                            for (order in db.ordersDao().getUserOrderedProducts(userId)){
-                                val productId = db.productsDao().getProductsByName(name)[0].id
-                                if(order.productId == productId)
-                                    ++order.quantity
-                                else{
-                                    db.ordersDao().insertOrder(Order(null,
-                                        productId,
-                                        userId,1))
+                            val product = db.productsDao().getProductsByName(name)[0].id
+                            if (ordersDao.isEmpty()){
+                                db.ordersDao().insertOrder(Order(null,
+                                    product,
+                                    userId,1))
+                            }else {
+                                for (order in ordersDao) {
+                                    val productId = db.productsDao().getProductsByName(name)[0].id
+                                    if (order.productId == productId)
+                                        ++order.quantity
+                                    else {
+                                        db.ordersDao().insertOrder(
+                                            Order(
+                                                null,
+                                                productId,
+                                                userId, 1
+                                            )
+                                        )
+                                    }
                                 }
                             }
                             Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
